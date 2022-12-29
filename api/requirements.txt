@@ -1,0 +1,1 @@
+fastapi[all]==0.88.0 ; python_version >= "3.9" and python_version < "4.0"
