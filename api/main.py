@@ -1,13 +1,14 @@
 """Main entry point for the FastAPI application.
 """
 
-from fastapi import Depends, FastAPI, status
-from sqlmodel import Session
+from fastapi import FastAPI
 
-from .core import database, models
-from .core.database import get_session
+from .core import database
+from .routers import user
 
 app = FastAPI()
+
+app.include_router(user.router)
 
 
 @app.on_event("startup")
@@ -16,18 +17,5 @@ def on_startup():
 
 
 @app.get("/")
-async def root():
+def root():
     return {"message": "Hello World"}
-
-
-@app.post("/users/", response_model=models.UserRead, status_code=status.HTTP_201_CREATED)
-def create_user(user_create: models.UserCreate, session: Session = Depends(get_session)):
-    user = database.add_user(user_create, session)
-    return user
-
-
-@app.get("/users/", response_model=list[models.UserRead])
-def get_users(session: Session = Depends(get_session)):
-    users = database.get_all_users(session)
-
-    return users
