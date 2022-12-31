@@ -3,7 +3,7 @@
 
 </h2>
 <p align="center">
-    0.6.0
+    0.6.1
 </p>
 <p align="center">
   <img  src="https://github.com/yemaney/microservice-py-docker/actions/workflows/test.yaml/badge.svg" alt="Test">
