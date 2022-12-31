@@ -27,3 +27,7 @@ class UserCreate(UserBase):
 
 class UserRead(UserBase):
     pass
+
+
+class UserLogin(UserCreate):
+    pass

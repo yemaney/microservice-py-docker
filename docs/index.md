@@ -3,7 +3,7 @@
 
 </h2>
 <p align="center">
-    0.4.0
+    0.5.0
 </p>
 
 <p align="center">
@@ -27,6 +27,7 @@ Api created using FastAPI. Acts as a gateway that listens for user requests, and
 - Functionalities
     - create users
     - get all users
+    - login
 
 ### Database
 
