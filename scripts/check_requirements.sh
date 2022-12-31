@@ -3,6 +3,7 @@
 
 # This script is used to make sure the project requirements.txt file is up to date
 # Intended to be used as a pre-commit hook, hook written in .pre-commit-config.yaml
+# sourced from : https://github.com/edkrueger/poetry-package-template-gemfury/blob/main/write_requirements.sh
 
 FAILED=false
 

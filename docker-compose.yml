@@ -4,10 +4,21 @@ services:
 
   api:
     build: api
-    command: uvicorn main:app --host=0.0.0.0 --port=8000 --reload --reload-include *
+    command: uvicorn api.main:app --host=0.0.0.0 --port=8000 --reload --reload-include **
     ports:
       - 8000:8000
-    volumes:
-      - ./api/:/app
     depends_on:
       - postgres
+    env_file:
+        - ./api/.env
+    volumes:
+      - ./api/:/src/api/
+
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    env_file:
+      - ./db/.env
+    # volumes:
+    #   - ./db:/var/lib/postgresql/data
