@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from sqlmodel import Session
 
-from ..core import database, models
+from ..core import database, models, utils
 from ..core.database import get_session
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -9,6 +9,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.post("/", response_model=models.UserRead, status_code=status.HTTP_201_CREATED)
 def create_user(user_create: models.UserCreate, session: Session = Depends(get_session)):
+    user_create.password = utils.hash_password(user_create.password)
     user = database.add_user(user_create, session)
     return user
 

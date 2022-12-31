@@ -31,7 +31,7 @@ else
     FAILED=True
 fi
 
-echo $FAILED
+
 # handle exit
 if [ "$FAILED" = true ]; then
     exit 1

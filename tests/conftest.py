@@ -12,7 +12,7 @@ def session_fixture():
 
     DB_URL = f"postgresql://{settings.db_user}:{settings.db_password}@{settings.db_host}:{settings.db_port}/{settings.db_name}"
 
-    test_engine = create_engine(f"{DB_URL}_test", echo=True)
+    test_engine = create_engine(f"{DB_URL}_test")
 
     SQLModel.metadata.create_all(test_engine)
     with Session(test_engine) as session:

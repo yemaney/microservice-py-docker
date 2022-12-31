@@ -39,15 +39,12 @@ def add_user(user_create: models.UserCreate, session: Session) -> models.User:
 
 
 def get_all_users(session: Session) -> list[models.User]:
+    """retrieve all users in database"""
     user = session.exec(select(models.User)).all()
     return user
 
 
 def get_user(user: models.UserCreate, session: Session) -> models.User:
-    _user = session.exec(
-        select(models.User)
-        .where(models.User.email == user.email)
-        .where(models.User.password == user.password)
-    ).one()
-
+    """retrieve one user from database based on email match"""
+    _user = session.exec(select(models.User).where(models.User.email == user.email)).one()
     return _user
