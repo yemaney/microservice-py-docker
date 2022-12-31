@@ -20,11 +20,14 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.post(
-    "/users/", response_model=models.UserRead, status_code=status.HTTP_201_CREATED
-)
-def create_user(
-    user_create: models.UserCreate, session: Session = Depends(get_session)
-):
+@app.post("/users/", response_model=models.UserRead, status_code=status.HTTP_201_CREATED)
+def create_user(user_create: models.UserCreate, session: Session = Depends(get_session)):
     user = database.add_user(user_create, session)
     return user
+
+
+@app.get("/users/", response_model=list[models.UserRead])
+def get_users(session: Session = Depends(get_session)):
+    users = database.get_all_users(session)
+
+    return users
