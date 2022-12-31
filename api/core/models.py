@@ -7,18 +7,23 @@ endpoints can receive and return. If the data doesn't match the schema at either
 then an error will occur.
 """
 
+from datetime import datetime
 from typing import Optional
 
+from pydantic import EmailStr
 from sqlmodel import Field, SQLModel
 
 
 class UserBase(SQLModel):
-    email: str
+    email: EmailStr = Field(unique=True)
 
 
 class User(UserBase, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
     password: str
+    created_at: Optional[datetime] = Field(
+        default_factory=datetime.utcnow, nullable=False
+    )
 
 
 class UserCreate(UserBase):
@@ -26,7 +31,7 @@ class UserCreate(UserBase):
 
 
 class UserRead(UserBase):
-    pass
+    created_at: datetime
 
 
 class UserLogin(UserCreate):

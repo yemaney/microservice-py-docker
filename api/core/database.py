@@ -7,7 +7,7 @@ Does:
 - add user to database
 """
 
-from typing import Generator
+from typing import Generator, Union
 
 from sqlmodel import Session, SQLModel, create_engine, select
 
@@ -15,7 +15,7 @@ from . import models
 from .config import settings
 
 DB_URL = f"postgresql://{settings.db_user}:{settings.db_password}@{settings.db_host}:{settings.db_port}/{settings.db_name}"
-engine = create_engine(DB_URL, echo=True)
+engine = create_engine(DB_URL)
 
 
 def create_tables() -> None:
@@ -44,7 +44,9 @@ def get_all_users(session: Session) -> list[models.User]:
     return user
 
 
-def get_user(user: models.UserCreate, session: Session) -> models.User:
+def get_user(user: models.UserCreate, session: Session) -> Union[models.User, None]:
     """retrieve one user from database based on email match"""
-    _user = session.exec(select(models.User).where(models.User.email == user.email)).one()
+    _user = session.exec(
+        select(models.User).where(models.User.email == user.email)
+    ).first()
     return _user

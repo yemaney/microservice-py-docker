@@ -42,7 +42,9 @@ def users_fixture(session: Session, client: TestClient):
 
     for user_dict in user_dicts:
         client.post("/users/", json=user_dict)
-    user_models: list[models.User] = [models.User(**user) for user in user_dicts]
+    user_models: list[models.UserCreate] = [
+        models.UserCreate(**user) for user in user_dicts  # type: ignore
+    ]
 
     yield user_models
     for user_model in user_models:

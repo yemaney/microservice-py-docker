@@ -3,7 +3,7 @@
 
 </h2>
 <p align="center">
-    0.6.1
+    0.6.2
 </p>
 
 <p align="center">
