@@ -5,9 +5,10 @@ Does:
 - create database tables
 - create temporary session connection to database
 - add user to database
+- get one user or get all users from database
 """
 
-from typing import Generator, Union
+from typing import Generator, List, Union
 
 from sqlmodel import Session, SQLModel, create_engine, select
 
@@ -38,15 +39,14 @@ def add_user(user_create: models.UserCreate, session: Session) -> models.User:
     return user
 
 
-def get_all_users(session: Session) -> list[models.User]:
+def get_all_users(session: Session) -> List[models.User]:
     """retrieve all users in database"""
     user = session.exec(select(models.User)).all()
     return user
 
 
-def get_user(user: models.UserCreate, session: Session) -> Union[models.User, None]:
+def get_user(email: str, session: Session) -> Union[models.User, None]:
     """retrieve one user from database based on email match"""
-    _user = session.exec(
-        select(models.User).where(models.User.email == user.email)
-    ).first()
+
+    _user = session.exec(select(models.User).where(models.User.email == email)).first()
     return _user

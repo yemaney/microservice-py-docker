@@ -1,26 +1,27 @@
+"""This module defines a router for the api that dedicated to authentication.
+"""
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlmodel import Session
 
-from ..core import database, models, utils
+from ..core import database, models, oauth2
 from ..core.database import get_session
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router = APIRouter(tags=["Auth"])
 
 
-@router.post("/login", response_model=models.UserRead)
-def login(user: models.UserLogin, session: Session = Depends(get_session)):
+@router.post("/login", response_model=models.Token)
+def login(user_credentials: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
 
-    _user = database.get_user(user, session)
+    user = database.get_user(user_credentials.username, session)
 
-    if not _user:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credentials"
-        )
+    if not user:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credentials")
 
-    password_matching = utils.verify(user.password, _user.password)
+    password_matching = oauth2.verify_password(user_credentials.password, user.password)
     if not password_matching:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credentials"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credentials")
 
-    return _user
+    access_token = oauth2.create_access_token(data={"user": user.id})
+
+    return {"access_token": access_token, "token_type": "bearer"}

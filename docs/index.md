@@ -3,7 +3,7 @@
 
 </h2>
 <p align="center">
-    0.6.2
+    0.7.0
 </p>
 
 <p align="center">
@@ -29,6 +29,7 @@ Api created using FastAPI. Acts as a gateway that listens for user requests, and
         - with password hashing
     - get all users
     - login
+    - oath2 authentication with JWT tokens
 
 ### Database
 

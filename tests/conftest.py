@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine, select
@@ -8,8 +10,8 @@ from api.core.database import get_session
 from api.main import app
 
 
-@pytest.fixture(name="session")
-def session_fixture():
+@pytest.fixture
+def session():
 
     DB_URL = f"postgresql://{settings.db_user}:{settings.db_password}@{settings.db_host}:{settings.db_port}/{settings.db_name}"
 
@@ -20,8 +22,8 @@ def session_fixture():
         yield session
 
 
-@pytest.fixture(name="client")
-def client_fixture(session: Session):
+@pytest.fixture
+def client(session: Session):
     def get_session_override():
         return session
 
@@ -32,9 +34,9 @@ def client_fixture(session: Session):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture(name="users")
-def users_fixture(session: Session, client: TestClient):
-    user_dicts: list[dict[str, str]] = [
+@pytest.fixture
+def users(session: Session, client: TestClient):
+    user_dicts: List[Dict[str, str]] = [
         {"email": "user1@email.com", "password": "123"},
         {"email": "user2@email.com", "password": "456"},
         {"email": "user3@email.com", "password": "789"},
@@ -42,9 +44,7 @@ def users_fixture(session: Session, client: TestClient):
 
     for user_dict in user_dicts:
         client.post("/users/", json=user_dict)
-    user_models: list[models.UserCreate] = [
-        models.UserCreate(**user) for user in user_dicts  # type: ignore
-    ]
+    user_models: List[models.UserCreate] = [models.UserCreate(**user) for user in user_dicts]  # type: ignore
 
     yield user_models
     for user_model in user_models:
@@ -53,3 +53,14 @@ def users_fixture(session: Session, client: TestClient):
         user = results.one()
         session.delete(user)
     session.commit()
+
+
+@pytest.fixture
+def logged_in_user(client: TestClient, users: List[models.UserCreate]):
+    user_dict = {"email": "user1@email.com", "password": "123"}
+    client.post("/users", json=user_dict)
+
+    user_dict["username"] = user_dict.pop("email")
+    response = client.post("/login", data=user_dict)
+
+    yield response.json(), users
