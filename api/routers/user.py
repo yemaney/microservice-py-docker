@@ -6,13 +6,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
 from ..core import database, models, oauth2
-from ..core.database import get_session
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.post("/", response_model=models.UserRead, status_code=status.HTTP_201_CREATED)
-def create_user(user_create: models.UserCreate, session: Session = Depends(get_session)):
+def create_user(user_create: models.UserCreate, session: Session = Depends(database.get_session)):
     user_exists = database.get_user(user_create.email, session)
 
     if user_exists:
@@ -29,7 +28,8 @@ def create_user(user_create: models.UserCreate, session: Session = Depends(get_s
 
 @router.get("/", response_model=List[models.UserRead])
 def get_users(
-    session: Session = Depends(get_session), current_user: models.User = Depends(oauth2.get_current_user)
+    session: Session = Depends(database.get_session),
+    current_user: models.User = Depends(oauth2.get_current_user),
 ):
 
     users = database.get_all_users(session)

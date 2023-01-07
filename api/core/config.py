@@ -10,6 +10,9 @@ DB_PASSWORD=123
 DB_HOST=postgres
 DB_PORT=5432
 DB_NAME=fastapi
+SECRET_KEY=d751923806645de8f6f6376798574ef844bb6d6d5ca36a8224718a84c775ad19
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTE=30
 ```
 
 Although it is recommended to use a .env file if deploying docker-compose, the settings will also read from

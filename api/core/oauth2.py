@@ -8,9 +8,8 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlmodel import Session, select
 
+from . import database, models
 from .config import settings
-from .database import get_session
-from .models import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -44,7 +43,7 @@ def verify_access_token(token: str, credentials_exception: HTTPException):
     return _id
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Depends(database.get_session)):
     """Gets a current user by verifying the JWT token passed, and using its payload data
     to query the users database for a corresponding  user.
     """
@@ -55,7 +54,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Dep
     )
     _id = verify_access_token(token, credentials_exception)
 
-    user = session.exec(select(User).where(User.id == _id)).first()
+    user = session.exec(select(models.User).where(models.User.id == _id)).first()
 
     return user
 
