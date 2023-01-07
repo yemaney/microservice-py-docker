@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "microservice-py-docker"
-version = "0.7.0"
+version = "0.8.0"
 description = "Microservice with python and docker"
 authors = ["yemaney <yemane_@outlook.com>"]
 license = "MIT"

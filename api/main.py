@@ -4,13 +4,14 @@
 from fastapi import FastAPI
 
 from .core import database
-from .routers import auth, user
+from .routers import auth, file, user
 
 app = FastAPI()
 
 
-app.include_router(user.router)
 app.include_router(auth.router)
+app.include_router(file.router)
+app.include_router(user.router)
 
 
 @app.on_event("startup")
