@@ -1,4 +1,4 @@
-"""This module defines a router for the api that dedicated to authentication.
+"""This module defines a router for the api that is dedicated to authentication.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm

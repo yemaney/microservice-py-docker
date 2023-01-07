@@ -1,3 +1,5 @@
+"""This module defines a router for the api that is dedicated to file related responsibilities.
+"""
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 
 from ..core import models, oauth2
