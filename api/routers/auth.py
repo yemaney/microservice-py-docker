@@ -10,7 +10,10 @@ router = APIRouter(tags=["Auth"])
 
 
 @router.post("/login", response_model=models.Token)
-def login(user_credentials: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(database.get_session)):
+def login(
+    user_credentials: OAuth2PasswordRequestForm = Depends(),
+    session: Session = Depends(database.get_session),
+):
 
     user = database.get_user(user_credentials.username, session)
 

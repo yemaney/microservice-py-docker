@@ -9,10 +9,17 @@ services:
       - 8000:8000
     depends_on:
       - postgres
+      - rabbitmq
+      - backend
     env_file:
         - ./api/.env
     volumes:
       - ./api/:/src/api/
+
+  backend:
+    build: backend
+    depends_on:
+      - rabbitmq
 
   postgres:
     image: postgres
@@ -22,3 +29,8 @@ services:
       - ./db/.env
     # volumes:
     #   - ./db:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq
+    ports:
+      - 5672:5672

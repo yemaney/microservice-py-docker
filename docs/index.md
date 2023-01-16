@@ -3,7 +3,7 @@
 
 </h2>
 <p align="center">
-    0.8.0
+    0.9.0
 </p>
 
 <p align="center">
@@ -38,3 +38,11 @@ Uses PostgreSQL. Stores information for the users that have been created.
 
 - Table
     - Users
+
+### RabbitMQ
+
+Queue for messages created  whenever file is uploaded
+
+### Backend
+
+Server hosting consumers for the RabbitMQ files queue.

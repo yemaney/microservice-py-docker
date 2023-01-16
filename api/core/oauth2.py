@@ -43,7 +43,10 @@ def verify_access_token(token: str, credentials_exception: HTTPException):
     return _id
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Depends(database.get_session)):
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    session: Session = Depends(database.get_session),
+):
     """Gets a current user by verifying the JWT token passed, and using its payload data
     to query the users database for a corresponding  user.
     """

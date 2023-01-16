@@ -1,12 +1,15 @@
-from typing import Dict, List
+from typing import Dict, Generator, List
 
+import pika
 import pytest
 from fastapi.testclient import TestClient
+from pika.adapters.blocking_connection import BlockingChannel
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from api.core import models
 from api.core.config import settings
 from api.core.database import get_session
+from api.core.queue import get_queue_channel
 from api.main import app
 
 
@@ -23,11 +26,26 @@ def session():
 
 
 @pytest.fixture
-def client(session: Session):
+def channel() -> Generator[BlockingChannel, None, None]:
+
+    connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+    channel = connection.channel()
+
+    channel.queue_declare(queue="files_test")
+    yield channel
+    connection.close()
+
+
+@pytest.fixture
+def client(session: Session, channel: BlockingChannel):
     def get_session_override():
         return session
 
+    def get_channel_override():
+        return channel
+
     app.dependency_overrides[get_session] = get_session_override
+    app.dependency_overrides[get_queue_channel] = get_channel_override
 
     client = TestClient(app)
     yield client

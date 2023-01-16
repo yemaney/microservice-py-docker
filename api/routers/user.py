@@ -27,7 +27,10 @@ def create_user(user_create: models.UserCreate, session: Session = Depends(datab
 
 
 @router.get("/", response_model=List[models.UserRead])
-def get_users(session: Session = Depends(database.get_session), current_user: models.User = Depends(oauth2.get_current_user)):
+def get_users(
+    session: Session = Depends(database.get_session),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
 
     users = database.get_all_users(session)
 
