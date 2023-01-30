@@ -1,8 +1,6 @@
 """Main entry point for the backend application.
 """
 
-import time
-
 from . import core
 
 
@@ -27,6 +25,4 @@ def main(
 
 
 if __name__ == "__main__":
-    # give time for rabbitMQ server to start
-    time.sleep(15)
     main()
