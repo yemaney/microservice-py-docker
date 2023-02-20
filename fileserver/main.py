@@ -54,12 +54,15 @@ def upload_file(file: UploadFile, user_id: Union[str, None] = Header(default=Non
     """
     logger.info(f"{user_id} uploaded {file.filename}")
 
-    # make sure folder exists
-    file_path = f"./fileserver/files/{user_id}"
-    os.makedirs(file_path, exist_ok=True)
+    try:
+        # make sure folder exists
+        file_path = f"./fileserver/files/{user_id}"
+        os.makedirs(file_path, exist_ok=True)
 
-    # save file to disk
-    with open(f"{file_path}/{file.filename}", "wb+") as file_object:
-        shutil.copyfileobj(file.file, file_object)
-
+        # save file to disk
+        with open(f"{file_path}/{file.filename}", "wb+") as file_object:
+            shutil.copyfileobj(file.file, file_object)
+    except Exception as e:
+        logger.error(e)
+        return {"status": 500, "filename": file.filename, "content_type": file.content_type}
     return {"filename": file.filename, "content_type": file.content_type}
