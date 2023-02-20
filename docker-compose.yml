@@ -11,10 +11,21 @@ services:
       - postgres
       - rabbitmq
       - backend
+      - fileserver
     env_file:
-        - ./api/.env
+        - .env
     volumes:
       - ./api/:/src/api/
+
+  fileserver:
+    build: fileserver
+    command: uvicorn fileserver.main:app --host=0.0.0.0 --port=8080 --reload
+    ports:
+      - 8080:8080
+    depends_on:
+      - rabbitmq
+    volumes:
+      - ./fileserver/:/src/fileserver/
 
   backend:
     build: backend
@@ -26,7 +37,7 @@ services:
     ports:
       - 5432:5432
     env_file:
-      - ./db/.env
+      - .env
     # volumes:
     #   - ./db:/var/lib/postgresql/data
 

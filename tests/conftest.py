@@ -11,12 +11,13 @@ from api.core.config import settings
 from api.core.database import get_session
 from api.core.queue import get_queue_channel
 from api.main import app
+from fileserver.main import app as fileserver_app
 
 
 @pytest.fixture
 def session():
 
-    DB_URL = f"postgresql://{settings.db_user}:{settings.db_password}@{settings.db_host}:{settings.db_port}/{settings.db_name}"
+    DB_URL = f"postgresql://{settings.db_user}:{settings.db_password}@localhost:{settings.db_port}/{settings.db_name}"
 
     test_engine = create_engine(f"{DB_URL}_test")
 
@@ -50,6 +51,12 @@ def client(session: Session, channel: BlockingChannel):
     client = TestClient(app)
     yield client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def fileserver_client():
+    content_client = TestClient(fileserver_app)
+    yield content_client
 
 
 @pytest.fixture

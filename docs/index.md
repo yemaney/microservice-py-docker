@@ -3,7 +3,7 @@
 
 </h2>
 <p align="center">
-    0.9.0
+    0.10.0
 </p>
 
 <p align="center">
@@ -46,3 +46,7 @@ Queue for messages created  whenever file is uploaded
 ### Backend
 
 Server hosting consumers for the RabbitMQ files queue.
+
+### Fileserver
+
+Server hosting raw files that users upload.
