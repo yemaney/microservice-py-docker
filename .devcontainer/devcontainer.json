@@ -12,14 +12,15 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pipx install poetry",
+	"postCreateCommand": "sudo apt update && sudo apt install bash-completion -y && pipx install poetry && sudo curl https://raw.githubusercontent.com/yemaney/gitmoji-sh/main/gitmoji.sh -o /usr/bin/gitmoji && sudo chmod +x /usr/bin/gitmoji",
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				"eamodio.gitlens",
 				"GitHub.vscode-github-actions",
-				"njpwerner.autodocstring"
+				"njpwerner.autodocstring",
+				"ms-vscode.makefile-tools"
 			],
 			"settings": {
 				"autoDocstring.docstringFormat": "numpy",
