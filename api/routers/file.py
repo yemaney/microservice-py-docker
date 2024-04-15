@@ -1,11 +1,11 @@
 """This module defines a router for the api that is dedicated to file related responsibilities.
 """
+import datetime
 import json
 
-import httpx
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 
-from ..core import models, oauth2, queue
+from ..core import models, oauth2, queue, files
 
 router = APIRouter(prefix="/files", tags=["Files"])
 
@@ -15,6 +15,7 @@ async def upload_file(
     file: UploadFile,
     current_user: models.User = Depends(oauth2.get_current_user),
     channel: queue.BlockingChannel = Depends(queue.get_queue_channel),
+    client: files.Minio = Depends(files.get_minio_client)
 ):
     """
     Endpoint for users to upload one file. Checks content type to make sure its supported,
@@ -32,7 +33,8 @@ async def upload_file(
         authorized user, by default Depends(oauth2.get_current_user)
     channel : queue.BlockingChannel
         channel used to publish message to file queue, by default Depends(queue.get_queue_channel)
-
+    client : files.Minio
+        client used to upload files to the minIO service
     Returns
     -------
     dict
@@ -41,7 +43,7 @@ async def upload_file(
     Raises
     ------
     HTTPException
-        if file with unsupported content type is uploaded
+        if file content type is unsupported or the client couldn't upload to minIO
     """
     if file.content_type != "text/plain":
         raise HTTPException(
@@ -49,18 +51,31 @@ async def upload_file(
             detail=f"File type of {file.content_type} is not a supported media type of text/plain",
         )
 
-    # send file to file-server
-    # include user id in headers
-    async with httpx.AsyncClient() as client:
-        await client.post(
-            "http://127.0.0.1:8080/file",
-            data={},
-            files={"file": (file.filename, file.file)},
-            headers={"user-id": str(current_user.id)},
+
+    file_size = await files.get_file_size(file)
+
+
+    try:
+        client.put_object(
+            files.BUCKET , f"{current_user.id}/{file.filename}" , file.file, file_size
+        )
+        print(f"'{file.filename}' is successfully uploaded as '{file.filename}' in bucket '{files.BUCKET}'.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error uploading file."
+        )
+    
+    try:
+        # send file meta-data to queue
+        message = {"filename": file.filename, "content_type": file.content_type}
+        channel.basic_publish(exchange="", routing_key="files", body=json.dumps(message))
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error queueing file process"
         )
 
-    # send file meta-data to queue
-    message = {"filename": file.filename, "content_type": file.content_type}
-    channel.basic_publish(exchange="", routing_key="files", body=json.dumps(message))
-
-    return {"filename": file.filename, "content_type": file.content_type}
+    return {"filename": file.filename, "content_type": file.content_type, "size": file_size, "date": datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}

@@ -15,7 +15,7 @@
 </h1>
 
 <p align="center">
-  <img  src="docs/images/diagram.png" alt="Coverage">
+  <img  src="docs/images/diagram.svg" alt="Coverage">
 </p>
 
 ---

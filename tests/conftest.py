@@ -11,7 +11,6 @@ from api.core.config import settings
 from api.core.database import get_session
 from api.core.queue import get_queue_channel
 from api.main import app
-from fileserver.main import app as fileserver_app
 
 
 @pytest.fixture
@@ -51,12 +50,6 @@ def client(session: Session, channel: BlockingChannel):
     client = TestClient(app)
     yield client
     app.dependency_overrides.clear()
-
-
-@pytest.fixture
-def fileserver_client():
-    content_client = TestClient(fileserver_app)
-    yield content_client
 
 
 @pytest.fixture
