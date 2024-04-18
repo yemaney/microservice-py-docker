@@ -1,14 +1,24 @@
-from typing import Generator
+"""This module is concerned with rabbitmq connection."""
 
-import pika
-from pika.adapters.blocking_connection import BlockingChannel
+import json
+from typing import AsyncGenerator, Awaitable, Callable
+
+import aio_pika
 
 
-def get_queue_channel() -> Generator[BlockingChannel, None, None]:
+async def get_publisher(
+    queue: str = "files",
+) -> AsyncGenerator[Callable[[dict], Awaitable[None]], None]:
+    async def publish_message(message: dict) -> None:
+        await channel.default_exchange.publish(
+            aio_pika.Message(body=json.dumps(message).encode()), routing_key=queue
+        )
 
-    connection = pika.BlockingConnection(pika.ConnectionParameters("rabbitmq"))
-    channel = connection.channel()
+    connection = await aio_pika.connect_robust()
+    channel = await connection.channel()
 
-    channel.queue_declare(queue="files")
-    yield channel
-    connection.close()
+    await channel.declare_queue(queue)
+
+    yield publish_message
+
+    await connection.close()

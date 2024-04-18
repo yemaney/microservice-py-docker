@@ -1,17 +1,14 @@
 import tempfile
 from typing import List, Tuple
 
-import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session
 
 from api.core import models
 
 
-
-@pytest.mark.anyio
-async def test_upload_file(client: TestClient, session: Session, logged_in_user: Tuple[dict, List[models.UserCreate]]):
-
+def test_upload_file(
+    client: TestClient, logged_in_user: Tuple[dict, List[models.UserCreate]]
+):
     jwt = logged_in_user[0]["access_token"]
     headers = {"Authorization": f"Bearer {jwt}"}
 
@@ -25,7 +22,9 @@ async def test_upload_file(client: TestClient, session: Session, logged_in_user:
         assert data["content_type"] == "text/plain"
 
 
-def test_upload_filetype_fail(client: TestClient, logged_in_user: Tuple[dict, List[models.UserCreate]]):
+def test_upload_filetype_fail(
+    client: TestClient, logged_in_user: Tuple[dict, List[models.UserCreate]]
+):
     jwt = logged_in_user[0]["access_token"]
     headers = {"Authorization": f"Bearer {jwt}"}
 
@@ -37,7 +36,6 @@ def test_upload_filetype_fail(client: TestClient, logged_in_user: Tuple[dict, Li
 
 
 def test_upload_file_auth_fail(client: TestClient):
-
     with tempfile.TemporaryFile() as fp:
         files = [("file", ("my_file.txt", fp, "text/plain"))]
         response = client.post("/files", files=files)

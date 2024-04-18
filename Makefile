@@ -46,6 +46,7 @@ compose:
 
 checks:
 	make compose
+	@sleep 10
 	make badge
 	make requirements
 	@pre-commit

@@ -1,21 +1,19 @@
-from typing import Dict, Generator, List
+from functools import partial
+from typing import Dict, List
 
-import pika
 import pytest
 from fastapi.testclient import TestClient
-from pika.adapters.blocking_connection import BlockingChannel
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from api.core import models
 from api.core.config import settings
 from api.core.database import get_session
-from api.core.queue import get_queue_channel
+from api.core.queue import get_publisher
 from api.main import app
 
 
 @pytest.fixture
 def session():
-
     DB_URL = f"postgresql://{settings.db_user}:{settings.db_password}@localhost:{settings.db_port}/{settings.db_name}"
 
     test_engine = create_engine(f"{DB_URL}")
@@ -26,26 +24,12 @@ def session():
 
 
 @pytest.fixture
-def channel() -> Generator[BlockingChannel, None, None]:
-
-    connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
-    channel = connection.channel()
-
-    channel.queue_declare(queue="files_test")
-    yield channel
-    connection.close()
-
-
-@pytest.fixture
-def client(session: Session, channel: BlockingChannel):
+def client(session: Session):
     def get_session_override():
         return session
 
-    def get_channel_override():
-        return channel
-
     app.dependency_overrides[get_session] = get_session_override
-    app.dependency_overrides[get_queue_channel] = get_channel_override
+    app.dependency_overrides[get_publisher] = partial(get_publisher, "files_test")
 
     client = TestClient(app)
     yield client
@@ -62,7 +46,9 @@ def users(session: Session, client: TestClient):
 
     for user_dict in user_dicts:
         client.post("/users/", json=user_dict)
-    user_models: List[models.UserCreate] = [models.UserCreate(**user) for user in user_dicts]  # type: ignore
+    user_models: List[models.UserCreate] = [
+        models.UserCreate(**user) for user in user_dicts
+    ]  # type: ignore
 
     yield user_models
     for user_model in user_models:
