@@ -1,4 +1,4 @@
-.PHONY: requirements badge clean
+.PHONY: requirements badge compose checks
 
 # Target to update requirements.txt
 requirements:
@@ -36,3 +36,16 @@ badge:
 	@echo "Removing .coverage file"
 	@rm .coverage
 	@echo "done"
+
+compose:
+	@docker-compose down
+	@if docker images | awk '$$1=="microservice-py-docker-api" && $$2=="latest" {found=1; exit} END {exit !found}'; then \
+	    docker rmi microservice-py-docker-api:latest; \
+	fi
+	@docker-compose up -d
+
+checks:
+	make compose
+	make badge
+	make requirements
+	@pre-commit

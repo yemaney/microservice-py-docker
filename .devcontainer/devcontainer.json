@@ -20,7 +20,8 @@
 				"eamodio.gitlens",
 				"GitHub.vscode-github-actions",
 				"njpwerner.autodocstring",
-				"ms-vscode.makefile-tools"
+				"ms-vscode.makefile-tools",
+				"charliermarsh.ruff"
 			],
 			"settings": {
 				"autoDocstring.docstringFormat": "numpy",
