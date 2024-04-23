@@ -26,7 +26,7 @@ requirements:
 
 # Target to create coverage badge
 badge:
-	@pytest --cov
+	@pytest -s --cov
 	@echo "Creating coverage badge"
 	@if [ -f ./docs/images/coverage.svg ]; then \
 		echo "deleting old badge"; \
@@ -41,6 +41,9 @@ compose:
 	@docker-compose down
 	@if docker images | awk '$$1=="microservice-py-docker-api" && $$2=="latest" {found=1; exit} END {exit !found}'; then \
 	    docker rmi microservice-py-docker-api:latest; \
+	fi
+	@if docker images | awk '$$1=="microservice-py-docker-backend" && $$2=="latest" {found=1; exit} END {exit !found}'; then \
+	    docker rmi microservice-py-docker-backend:latest; \
 	fi
 	@docker-compose up -d
 

@@ -6,9 +6,10 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from api.core import models
+from api.core.celery import get_celery_client
 from api.core.config import settings
 from api.core.database import get_session
-from api.core.queue import get_publisher
+from api.core.files import get_minio_client
 from api.main import app
 
 
@@ -29,7 +30,10 @@ def client(session: Session):
         return session
 
     app.dependency_overrides[get_session] = get_session_override
-    app.dependency_overrides[get_publisher] = partial(get_publisher, "files_test")
+    app.dependency_overrides[get_celery_client] = partial(
+        get_celery_client, "localhost"
+    )
+    app.dependency_overrides[get_minio_client] = partial(get_minio_client, "localhost")
 
     client = TestClient(app)
     yield client

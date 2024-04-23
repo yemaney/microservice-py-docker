@@ -16,37 +16,6 @@
 </h1>
 ---
 <p align="center">
-  <img  src="images/diagram.png" alt="Coverage">
+  <img  src="images/diagram.svg" alt="Coverage">
 </p>
 ---
-
-### API
-
-Api created using FastAPI. Acts as a gateway that listens for user requests, and routes them to the appropriate services.
-
-- Functionalities
-    - create users
-        - with password hashing
-    - get all users
-    - login
-    - oath2 authentication with JWT token
-    - upload file
-
-### Database
-
-Uses PostgreSQL. Stores information for the users that have been created.
-
-- Table
-    - Users
-
-### RabbitMQ
-
-Queue for messages created  whenever file is uploaded
-
-### Backend
-
-Server hosting consumers for the RabbitMQ files queue.
-
-### Fileserver
-
-Server hosting raw files that users upload.

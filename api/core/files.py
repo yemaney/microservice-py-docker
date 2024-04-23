@@ -1,15 +1,19 @@
-"""This module is concerned with functions and objects related to file handling.
-"""
+"""This module is concerned with functions and objects related to file handling."""
 
 from fastapi import UploadFile
 from minio import Minio
 
 BUCKET = "images"
 
-def get_minio_client() -> Minio:
+
+def get_minio_client(host: str = "minio") -> Minio:
     """
     get_minio_client creates and returns a client that can connect with the minIO
-    service.
+
+    Parameters
+    ----------
+    host : str, optional
+        host to connect client to, by default "minio"
 
     Returns
     -------
@@ -17,18 +21,19 @@ def get_minio_client() -> Minio:
         client to interact with minIO service
     """
     client = Minio(
-        "127.0.0.1:9000",
+        f"{host}:9000",
         access_key="minioadmin",
         secret_key="minioadmin",
-        secure=False  # Set to True if you use HTTPS.
+        secure=False,  # Set to True if you use HTTPS.
     )
-    
+
     # Make a bucket if it doesn't already exist.
     found = client.bucket_exists(BUCKET)
     if not found:
         client.make_bucket(BUCKET)
 
     return client
+
 
 async def get_file_size(file: UploadFile) -> int:
     """

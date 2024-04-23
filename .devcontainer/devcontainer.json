@@ -9,7 +9,7 @@
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
 	},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+	"forwardPorts": [8000, 9001, 15672],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "sudo apt update && sudo apt install bash-completion -y && pipx install poetry && sudo curl https://raw.githubusercontent.com/yemaney/gitmoji-sh/main/gitmoji.sh -o /usr/bin/gitmoji && sudo chmod +x /usr/bin/gitmoji",
@@ -21,7 +21,10 @@
 				"GitHub.vscode-github-actions",
 				"njpwerner.autodocstring",
 				"ms-vscode.makefile-tools",
-				"charliermarsh.ruff"
+				"charliermarsh.ruff",
+				"streetsidesoftware.code-spell-checker",
+				"mhutchie.git-graph",
+				"rangav.vscode-thunder-client"
 			],
 			"settings": {
 				"autoDocstring.docstringFormat": "numpy",

@@ -1,10 +1,8 @@
 """This module defines a router for the api that is dedicated to file related responsibilities."""
 
-import datetime
-
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 
-from ..core import files, models, oauth2, queue
+from ..core import celery, files, models, oauth2
 
 router = APIRouter(prefix="/files", tags=["Files"])
 
@@ -13,13 +11,12 @@ router = APIRouter(prefix="/files", tags=["Files"])
 async def upload_file(
     file: UploadFile,
     current_user: models.User = Depends(oauth2.get_current_user),
-    client: files.Minio = Depends(files.get_minio_client),
-    message_publisher: queue.Awaitable = Depends(queue.get_publisher),
+    minio_client: files.Minio = Depends(files.get_minio_client),
+    celery_client: celery.Celery = Depends(celery.get_celery_client),
 ):
-    """
-    Endpoint for users to upload one file. Checks content type to make sure its supported,
-    otherwise returns an `415` HTTP error code. Sends the uploaded file to the file server
-    and then sends a message to the file queue for further processing.
+    """Endpoint for users to upload one file. Checks content type to make sure its supported,
+    otherwise returns an `415` HTTP error code. Sends the uploaded file to the minIO server
+    and then sends a task message to the celery queue for further processing.
 
     This endpoint requires authorization in the form of a bearer token in the headers of the
     request.
@@ -30,10 +27,10 @@ async def upload_file(
         file of supported file type that user uploads
     current_user : models.User
         authorized user, by default Depends(oauth2.get_current_user)
-    client : files.Minio
-        client used to upload files to the minIO service
-    message_publisher : queue.BlockingChannel
-        channel used to publish message to file queue, by default Depends(queue.get_publisher)
+    minio_client : files.Minio
+        client used to upload files to the minIO service, by default Depends(files.Minio)
+    celery_client : celery.Celery
+        client used to send tasks to the broker queue, by default Depends(celery.client)
     Returns
     -------
     dict
@@ -53,7 +50,7 @@ async def upload_file(
     file_size = await files.get_file_size(file)
 
     try:
-        client.put_object(
+        minio_client.put_object(
             files.BUCKET, f"{current_user.id}/{file.filename}", file.file, file_size
         )
         print(
@@ -67,9 +64,11 @@ async def upload_file(
         )
 
     try:
-        # send file meta-data to queue
-        message = {"filename": file.filename, "content_type": file.content_type}
-        await message_publisher(message)
+        # send file meta-data and user id to task queue
+        task = celery_client.send_task(
+            name="process_file",
+            args=[current_user.id, file.filename, file.content_type],
+        )
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(
@@ -81,5 +80,5 @@ async def upload_file(
         "filename": file.filename,
         "content_type": file.content_type,
         "size": file_size,
-        "date": datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"),
+        "status": task.status,
     }

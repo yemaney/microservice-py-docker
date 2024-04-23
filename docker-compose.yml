@@ -9,10 +9,17 @@ services:
       - postgres
       - rabbitmq
       - minio
+      - backend
     env_file:
         - .env
     volumes:
       - ./api/:/src/api/
+
+  backend:
+    build: backend
+    command: celery -A backend.main worker --loglevel=info
+    depends_on:
+      - rabbitmq
 
   minio:
       image: minio/minio
@@ -37,13 +44,22 @@ services:
       - 5432:5432
     env_file:
       - .env
-    # volumes:
-    #   - ./db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
-    image: rabbitmq
+    image: rabbitmq:3.13.1-management
     ports:
       - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
 
 volumes:
   minio_data:
