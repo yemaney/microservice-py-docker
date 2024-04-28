@@ -1,5 +1,4 @@
 from functools import partial
-from typing import Dict, List
 
 import pytest
 from fastapi.testclient import TestClient
@@ -15,9 +14,9 @@ from api.main import app
 
 @pytest.fixture
 def session():
-    DB_URL = f"postgresql://{settings.db_user}:{settings.db_password}@localhost:{settings.db_port}/{settings.db_name}"
+    db_url = f"postgresql://{settings.postgres_user}:{settings.postgres_password}@localhost:{settings.postgres_port}/{settings.postgres_db}"
 
-    test_engine = create_engine(f"{DB_URL}")
+    test_engine = create_engine(f"{db_url}")
 
     SQLModel.metadata.create_all(test_engine)
     with Session(test_engine) as session:
@@ -30,9 +29,7 @@ def client(session: Session):
         return session
 
     app.dependency_overrides[get_session] = get_session_override
-    app.dependency_overrides[get_celery_client] = partial(
-        get_celery_client, "localhost"
-    )
+    app.dependency_overrides[get_celery_client] = partial(get_celery_client, "localhost")
     app.dependency_overrides[get_minio_client] = partial(get_minio_client, "localhost")
 
     client = TestClient(app)
@@ -42,7 +39,7 @@ def client(session: Session):
 
 @pytest.fixture
 def users(session: Session, client: TestClient):
-    user_dicts: List[Dict[str, str]] = [
+    user_dicts: list[dict[str, str]] = [
         {"email": "user1@email.com", "password": "123"},
         {"email": "user2@email.com", "password": "456"},
         {"email": "user3@email.com", "password": "789"},
@@ -50,9 +47,7 @@ def users(session: Session, client: TestClient):
 
     for user_dict in user_dicts:
         client.post("/users/", json=user_dict)
-    user_models: List[models.UserCreate] = [
-        models.UserCreate(**user) for user in user_dicts
-    ]  # type: ignore
+    user_models: list[models.UserCreate] = [models.UserCreate(**user) for user in user_dicts]  # type: ignore
 
     yield user_models
     for user_model in user_models:
@@ -64,11 +59,11 @@ def users(session: Session, client: TestClient):
 
 
 @pytest.fixture
-def logged_in_user(client: TestClient, users: List[models.UserCreate]):
+def logged_in_user(client: TestClient, users: list[models.UserCreate]):
     user_dict = {"email": "user1@email.com", "password": "123"}
     client.post("/users", json=user_dict)
 
     user_dict["username"] = user_dict.pop("email")
     response = client.post("/login", data=user_dict)
 
-    yield response.json(), users
+    return response.json(), users

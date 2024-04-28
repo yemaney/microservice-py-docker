@@ -1,12 +1,14 @@
+from fastapi import status
 from fastapi.testclient import TestClient
 
-from api.main import app
 
-client = TestClient(app)
-
-
-def test_root():
+def test_root(client: TestClient):
     r = client.get("/")
+    assert r.status_code == status.HTTP_200_OK
 
-    assert r.json() == {"message": "Hello World"}
-    assert r.status_code == 200
+
+def test_healthcheck(client: TestClient):
+    r = client.get("/healthcheck")
+
+    assert r.json()["status"] == "OK"
+    assert r.status_code == status.HTTP_200_OK
