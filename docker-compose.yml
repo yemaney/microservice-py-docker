@@ -6,10 +6,14 @@ services:
     ports:
       - 8000:8000
     depends_on:
-      - postgres
-      - rabbitmq
-      - minio
-      - backend
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
     env_file:
         - .env
     volumes:
@@ -19,15 +23,24 @@ services:
     build: backend
     command: celery -A backend.main worker --loglevel=info
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    env_file:
+        - .env
+    healthcheck:
+      test: celery -A backend.main status
+      interval: 10s
+      timeout: 10s
+      retries: 10
 
   minio:
       image: minio/minio
       volumes:
         - minio_data:/mnt/data
-      environment:
-        MINIO_ROOT_USER: minioadmin
-        MINIO_ROOT_PASSWORD: minioadmin
+      env_file:
+        - .env
       ports:
         - "9000:9000" # MinIO API and web interface
         - "9001:9001" # MinIO console interface
@@ -55,6 +68,8 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+    env_file:
+        - .env
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       interval: 30s
