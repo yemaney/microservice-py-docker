@@ -2,13 +2,14 @@
 
 # Target to update requirements.txt
 requirements:
+	@poetry lock
 	@FAILED=false; \
-	NEW_REQUIREMENTS=$$(poetry export -f requirements.txt --without-hashes --with dev); \
+	NEW_REQUIREMENTS=$$(poetry export -f requirements.txt --without-hashes --with dev,docs); \
 	if [ -f requirements.txt ]; then \
 		echo "requirements.txt exists!"; \
 	else \
 		echo "FAILURE: requirements.txt does not exist!"; \
-		poetry export --format requirements.txt --output requirements.txt --without-hashes --with dev; \
+		poetry export --format requirements.txt --output requirements.txt --without-hashes --with dev,docs; \
 		FAILED=true; \
 	fi; \
 	REQUIREMENTS=$$(cat requirements.txt); \
@@ -16,7 +17,7 @@ requirements:
 		echo "requirements.txt is up to date!"; \
 	else \
 		echo "FAILURE: requirements.txt is not up to date!"; \
-		poetry export --format requirements.txt --output requirements.txt --without-hashes --with dev; \
+		poetry export --format requirements.txt --output requirements.txt --without-hashes --with dev,docs; \
 		FAILED=true; \
 	fi; \
 	if [ "$$FAILED" = true ]; then \
