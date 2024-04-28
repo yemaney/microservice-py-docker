@@ -4,6 +4,8 @@ from typing import Generator
 
 from celery import Celery
 
+from api.core.config import settings
+
 
 def get_celery_client(host: str = "rabbitmq") -> Generator[Celery, None, None]:
     """
@@ -20,7 +22,7 @@ def get_celery_client(host: str = "rabbitmq") -> Generator[Celery, None, None]:
         celery app used to send tasks to the celery task queue
     """
     client = Celery(
-        "tasks", broker=f"amqp://guest:guest@{host}:5672/", backend="rpc://"
+        "tasks", broker=f"amqp://{settings.default_user}:{settings.default_pass}@{host}:5672/", backend="rpc://"
     )
     yield client
     client.close()

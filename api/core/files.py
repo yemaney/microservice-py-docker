@@ -3,6 +3,8 @@
 from fastapi import UploadFile
 from minio import Minio
 
+from api.core.config import settings
+
 BUCKET = "images"
 
 
@@ -22,8 +24,8 @@ def get_minio_client(host: str = "minio") -> Minio:
     """
     client = Minio(
         f"{host}:9000",
-        access_key="minioadmin",
-        secret_key="minioadmin",
+        access_key=settings.minio_root_user,
+        secret_key=settings.minio_root_password,
         secure=False,  # Set to True if you use HTTPS.
     )
 

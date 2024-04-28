@@ -1,41 +1,70 @@
-"""This module is concerned with handling settings with environment variables.
+"""This module is concerned with handling settings with environment variables."""
 
-The settings are created using a Pydantic class that reads environment variables from a `.env` file in the
-`/api` directory if it is available.
-
-Example `.env` file:
-```
-DB_USER=postgres
-DB_PASSWORD=123
-DB_HOST=postgres
-DB_PORT=5432
-DB_NAME=fastapi
-SECRET_KEY=d751923806645de8f6f6376798574ef844bb6d6d5ca36a8224718a84c775ad19
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTE=30
-```
-
-Although it is recommended to use a .env file if deploying docker-compose, the settings will also read from
-environment variables that are defined in the current terminal session.
-
-Example creating the environment variables through the terminal:
-`$ export DB_USER=postgres`
-"""
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    db_user: str
-    db_password: str
-    db_host: str
-    db_port: str
-    db_name: str
+    """
+    Settings _summary_
+
+    Attributes
+    ----------
+    db_user : str
+        Database user name.
+
+    db_password : str
+        Database password.
+
+    db_host : str
+        Database host address.
+
+    db_port : str
+        Database port number.
+
+    db_name : str
+        Database name.
+
+    secret_key : str
+        Secret key for token generation.
+
+    algorithm : str
+        Algorithm used for token generation.
+
+    access_token_expire_minute : int
+        Time in minutes for access token expiration.
+
+    minio_root_user : str
+        The access key for MinIO.
+
+    minio_root_password str
+        The secret key for MinIO.
+
+    default_user : str
+        The username for RabbitMQ.
+
+    default_pass : str
+        The password for RabbitMQ.
+
+    Classes
+    -------
+        Config: Used to load values for this class from the .env file
+
+    """
+
+    postgres_user: str
+    postgres_password: str
+    postgres_host: str
+    postgres_port: str
+    postgres_db: str
     secret_key: str
     algorithm: str
     access_token_expire_minute: int
+    minio_root_user: str
+    minio_root_password: str
+    default_user: str
+    default_pass: str
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
 settings = Settings()  # type: ignore

@@ -1,45 +1,48 @@
 """This module defines a router for the api that is dedicated to file related responsibilities."""
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+import logging
+from typing import Annotated
 
-from ..core import celery, files, models, oauth2
+import celery.exceptions
+from celery.exceptions import TaskError
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from minio.error import S3Error
+
+from api.core import celery, files, models, oauth2
 
 router = APIRouter(prefix="/files", tags=["Files"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=models.UploadedFile, status_code=status.HTTP_201_CREATED)
 async def upload_file(
     file: UploadFile,
-    current_user: models.User = Depends(oauth2.get_current_user),
-    minio_client: files.Minio = Depends(files.get_minio_client),
-    celery_client: celery.Celery = Depends(celery.get_celery_client),
+    current_user: Annotated[models.User, Depends(oauth2.get_current_user)],
+    minio_client: Annotated[files.Minio, Depends(files.get_minio_client)],
+    celery_client: Annotated[celery.Celery, Depends(celery.get_celery_client)],
 ):
-    """Endpoint for users to upload one file. Checks content type to make sure its supported,
-    otherwise returns an `415` HTTP error code. Sends the uploaded file to the minIO server
-    and then sends a task message to the celery queue for further processing.
-
-    This endpoint requires authorization in the form of a bearer token in the headers of the
-    request.
+    """
+    Endpoint for uploading files.
 
     Parameters
     ----------
     file : UploadFile
-        file of supported file type that user uploads
+        The file to be uploaded.
     current_user : models.User
-        authorized user, by default Depends(oauth2.get_current_user)
+        The current authenticated user.
     minio_client : files.Minio
-        client used to upload files to the minIO service, by default Depends(files.Minio)
+        The MinIO client for interacting with the object storage.
     celery_client : celery.Celery
-        client used to send tasks to the broker queue, by default Depends(celery.client)
+        The Celery client for queuing tasks.
+
     Returns
     -------
     dict
-        if successful, returns a dictionary containing the uploaded files filename and content type
+        A dictionary containing file metadata and status.
 
     Raises
     ------
     HTTPException
-        if file content type is unsupported or the client couldn't upload to minIO
+        If the file type is not supported or if there are errors during file upload or queuing.
     """
     if file.content_type != "text/plain":
         raise HTTPException(
@@ -50,18 +53,13 @@ async def upload_file(
     file_size = await files.get_file_size(file)
 
     try:
-        minio_client.put_object(
-            files.BUCKET, f"{current_user.id}/{file.filename}", file.file, file_size
-        )
-        print(
-            f"'{file.filename}' is successfully uploaded as '{file.filename}' in bucket '{files.BUCKET}'."
-        )
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        minio_client.put_object(files.BUCKET, f"{current_user.id}/{file.filename}", file.file, file_size)
+    except S3Error as e:
+        logging.exception()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error uploading file.",
-        )
+        ) from e
 
     try:
         # send file meta-data and user id to task queue
@@ -69,12 +67,12 @@ async def upload_file(
             name="process_file",
             args=[current_user.id, file.filename, file.content_type],
         )
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    except TaskError as e:
+        logging.exception()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error queueing file process",
-        )
+        ) from e
 
     return {
         "filename": file.filename,
