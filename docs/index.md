@@ -2,9 +2,7 @@
     microservice-py-docker
 
 </h2>
-<p align="center">
-    0.10.0
-</p>
+
 
 <p align="center">
   <img  src="https://github.com/yemaney/microservice-py-docker/actions/workflows/test.yaml/badge.svg" alt="Test">

@@ -20,6 +20,7 @@ theme:
     - navigation.tracking
     - search.highlight
     - content.tabs.link
+    - navigation.tabs
 markdown_extensions:
   - pymdownx.superfences:
       custom_fences:
@@ -33,3 +34,23 @@ markdown_extensions:
   - pymdownx.superfences
 repo_url: https://github.com/yemaney/microservice-py-docker
 repo_name: yemaney/microservice-py-docker
+plugins:
+- search
+- gen-files:
+    scripts:
+    - docs/gen_ref_pages.py
+- literate-nav:
+    nav_file: SUMMARY.md
+- section-index
+- mkdocstrings:
+    handlers:
+      python:
+        options:
+          members_order: source
+          docstring_style: numpy
+          separate_signature: true
+          show_signature_annotations: true
+          show_labels: true
+          show_bases: true
+          show_symbol_type_toc: true
+          show_symbol_type_heading: true
