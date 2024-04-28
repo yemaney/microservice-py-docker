@@ -16,7 +16,7 @@ jobs:
     - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
-        python-version: "3.10"
+        python-version: "3.12"
     - name: Start containers
       run: docker-compose -f "docker-compose.yml" up -d --build && sleep 30
     - name: Install dependencies
