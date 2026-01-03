@@ -1,15 +1,23 @@
-.PHONY: requirements badge compose checks
+.PHONY: requirements badge compose checks init
+
+# Target to initialize development environment
+init:
+	@sudo apt update
+	@sudo apt install bash-completion -y
+	@pipx install uv
+	@sudo curl https://raw.githubusercontent.com/yemaney/gitmoji-sh/main/gitmoji.sh -o /usr/bin/gitmoji
+	@sudo chmod +x /usr/bin/gitmoji
 
 # Target to update requirements.txt
 requirements:
-	@poetry lock
+	@uv sync
 	@FAILED=false; \
-	NEW_REQUIREMENTS=$$(poetry export -f requirements.txt --without-hashes --with dev,docs); \
+	NEW_REQUIREMENTS=$$(uv export --format requirements-txt); \
 	if [ -f requirements.txt ]; then \
 		echo "requirements.txt exists!"; \
 	else \
 		echo "FAILURE: requirements.txt does not exist!"; \
-		poetry export --format requirements.txt --output requirements.txt --without-hashes --with dev,docs; \
+		uv export --format requirements-txt > requirements.txt; \
 		FAILED=true; \
 	fi; \
 	REQUIREMENTS=$$(cat requirements.txt); \
@@ -17,7 +25,7 @@ requirements:
 		echo "requirements.txt is up to date!"; \
 	else \
 		echo "FAILURE: requirements.txt is not up to date!"; \
-		poetry export --format requirements.txt --output requirements.txt --without-hashes --with dev,docs; \
+		uv export --format requirements-txt > requirements.txt; \
 		FAILED=true; \
 	fi; \
 	if [ "$$FAILED" = true ]; then \

@@ -11,8 +11,6 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [8000, 9001, 15672],
 
-	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "sudo apt update && sudo apt install bash-completion -y && pipx install poetry && sudo curl https://raw.githubusercontent.com/yemaney/gitmoji-sh/main/gitmoji.sh -o /usr/bin/gitmoji && sudo chmod +x /usr/bin/gitmoji",
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
