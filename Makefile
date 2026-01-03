@@ -59,6 +59,7 @@ compose:
 checks:
 	make compose
 	@sleep 10
-	make badge
-	make requirements
-	@pre-commit
+	@trap 'docker-compose down' EXIT; \
+	pytest -s --cov && \
+	make requirements && \
+	pre-commit
