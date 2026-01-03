@@ -1,4 +1,4 @@
-.PHONY: requirements badge compose checks init
+.PHONY: requirements badge compose checks init act-build-docs act-test
 
 # Target to initialize development environment
 init:
@@ -7,6 +7,7 @@ init:
 	@pipx install uv
 	@sudo curl https://raw.githubusercontent.com/yemaney/gitmoji-sh/main/gitmoji.sh -o /usr/bin/gitmoji
 	@sudo chmod +x /usr/bin/gitmoji
+	@curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash -s -- -b /usr/local/bin
 
 # Target to update requirements.txt
 requirements:
@@ -63,3 +64,11 @@ checks:
 	pytest -s --cov && \
 	make requirements && \
 	pre-commit
+
+# Target to run build-docs GitHub Action locally with act
+act-build-docs:
+	@act -j deploy -W .github/workflows/build-docs.yaml
+
+# Target to run test GitHub Action locally with act
+act-test:
+	@act -j build -W .github/workflows/test.yaml
