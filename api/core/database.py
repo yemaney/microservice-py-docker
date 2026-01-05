@@ -2,6 +2,7 @@
 
 from typing import Generator
 
+from sqlalchemy import text
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from api.core import models
@@ -13,6 +14,11 @@ engine = create_engine(DB_URL)
 
 def create_tables() -> None:
     """populates database with all tables defined in models.py"""
+    # Enable pgvector extension for vector operations
+    with engine.connect() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
+        conn.commit()
+
     SQLModel.metadata.create_all(engine)
 
 

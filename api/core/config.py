@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     default_pass : str
         The password for RabbitMQ.
 
+    openrouter_api_key : str
+        The API key for OpenRouter.
+
     Classes
     -------
         Config: Used to load values for this class from the .env file
@@ -61,8 +64,10 @@ class Settings(BaseSettings):
     access_token_expire_minute: int
     minio_root_user: str
     minio_root_password: str
+    minio_host: str = "minio"
     default_user: str
     default_pass: str
+    openrouter_api_key: str
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

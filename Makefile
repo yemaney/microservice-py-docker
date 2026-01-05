@@ -9,11 +9,12 @@ init:
 	@sudo chmod +x /usr/bin/gitmoji
 	@curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash -s -- -b /usr/local/bin
 
-# Target to update requirements.txt
+# Target to update requirements.txt files
 requirements:
 	@uv sync
 	@FAILED=false; \
 	NEW_REQUIREMENTS=$$(uv export --format requirements-txt); \
+	# Check and update main requirements.txt \
 	if [ -f requirements.txt ]; then \
 		echo "requirements.txt exists!"; \
 	else \
@@ -29,6 +30,12 @@ requirements:
 		uv export --format requirements-txt > requirements.txt; \
 		FAILED=true; \
 	fi; \
+	# Update api/requirements.txt \
+	uv export --format requirements-txt > api/requirements.txt; \
+	echo "api/requirements.txt updated!"; \
+	# Update backend/requirements.txt \
+	uv export --format requirements-txt > backend/requirements.txt; \
+	echo "backend/requirements.txt updated!"; \
 	if [ "$$FAILED" = true ]; then \
 		exit 1; \
 	fi; \

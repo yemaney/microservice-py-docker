@@ -4,13 +4,14 @@ from fastapi import FastAPI, status
 from fastapi.responses import HTMLResponse
 
 from api.core import database, models
-from api.routers import auth, file, user
+from api.routers import auth, file, search, user
 
 app = FastAPI()
 
 
 app.include_router(auth.router)
 app.include_router(file.router)
+app.include_router(search.router)
 app.include_router(user.router)
 
 

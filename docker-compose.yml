@@ -18,9 +18,12 @@ services:
         - .env
     volumes:
       - ./api/:/src/api/
+      - ./.env:/src/.env
 
   backend:
-    build: backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     command: celery -A backend.main worker --loglevel=info
     depends_on:
       rabbitmq:
@@ -28,7 +31,9 @@ services:
       minio:
         condition: service_healthy
     env_file:
-        - .env
+      - .env
+    environment:
+      - PYTHONPATH=/src
     healthcheck:
       test: celery -A backend.main status
       interval: 10s
@@ -52,13 +57,13 @@ services:
         retries: 3
 
   postgres:
-    image: postgres
+    build: postgres
     ports:
       - 5432:5432
     env_file:
       - .env
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fastapi"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -1,11 +1,11 @@
-FROM python:3.9.5-slim
+FROM python:3.12-slim
 
-WORKDIR /src/backend
+# Copy backend requirements first
+COPY backend/requirements.txt /tmp/backend-requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /tmp/backend-requirements.txt
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
-
-COPY . .
+# Copy the entire project
+COPY . /src
 
 WORKDIR /src
 

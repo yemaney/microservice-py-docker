@@ -12,6 +12,7 @@ then an error will occur.
 from datetime import datetime
 from typing import Optional
 
+from pgvector.sqlalchemy import Vector
 from pydantic import BaseModel, EmailStr
 from sqlmodel import AutoString, Field, SQLModel
 
@@ -148,3 +149,70 @@ class UploadedFile(BaseModel):
     size: int
     content_type: str
     status: str
+
+
+class FileMetadata(SQLModel, table=True):  # type: ignore
+    """
+    Represents metadata for uploaded files including vector embeddings.
+
+    Attributes
+    ----------
+    id : Optional[int]
+        The unique identifier of the file metadata. It is a primary key.
+    user_id : int
+        The ID of the user who uploaded the file.
+    filename : str
+        The name of the uploaded file.
+    content_type : str
+        The content type of the uploaded file.
+    size : int
+        The size of the uploaded file in bytes.
+    minio_path : str
+        The path to the file in MinIO storage.
+    embedding : list[float]
+        The vector embedding of the file content (4096 dimensions).
+    created_at : Optional[datetime]
+        The datetime when the file was uploaded. Defaults to the current UTC time.
+
+    """
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(index=True)
+    filename: str = Field(index=True)
+    content_type: str
+    size: int
+    minio_path: str
+    embedding: list[float] = Field(sa_type=Vector(4096))
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow, nullable=False)
+
+
+class FileSearchResult(BaseModel):
+    """
+    Response model for file search results.
+
+    Attributes
+    ----------
+    id : int
+        The unique identifier of the file metadata.
+    filename : str
+        The name of the file.
+    content_type : str
+        The content type of the file.
+    size : int
+        The size of the file in bytes.
+    user_id : int
+        The ID of the user who owns the file.
+    created_at : datetime
+        When the file was uploaded.
+    similarity : float
+        The similarity score between the search query and the file embedding.
+
+    """
+
+    id: int
+    filename: str
+    content_type: str
+    size: int
+    user_id: int
+    created_at: datetime
+    similarity: float

@@ -91,30 +91,22 @@ microservice-py-docker/
 ### Test Structure and Conventions
 
 #### Configuration (`tests/conftest.py`)
-```python
-# Database session fixture for each test
-@pytest.fixture
-def session():
-    # Creates test database connection
-    # Yields session for use in tests
-
-# FastAPI test client with dependency overrides
-@pytest.fixture
-def client(session: Session):
-    # Overrides database, celery, and minio dependencies
-    # Provides isolated test client
-
-# User fixtures for authentication testing
-@pytest.fixture
-def users(session: Session, client: TestClient):
-    # Creates test users
-    # Cleans up after tests
-```
+The `conftest.py` file defines shared fixtures for the test suite:
+- `session`: Provides a clean PostgreSQL session for each test, using a test database.
+- `client`: A FastAPI `TestClient` with dependency overrides for database, Celery, and MinIO to ensure isolation.
+- `users`: Pre-populates the test database with a set of test users and handles cleanup.
+- `logged_in_user`: Provides a JWT token and user data for testing authenticated endpoints.
 
 #### Test File Organization
-- Test files named `test_*.py`
-- Test functions named `test_descriptive_action`
-- Fixtures imported from `conftest.py`
+- Test files are located in the `tests/` directory and named `test_*.py`.
+- Test functions are named `test_descriptive_action`.
+- Fixtures are automatically injected by pytest from `conftest.py`.
+
+#### Test Styles
+- **Isolation**: Each test should be independent and clean up its own data if not handled by fixtures.
+- **Dependency Overrides**: Use FastAPI's `dependency_overrides` to mock external services like Celery and MinIO.
+- **Assertions**: Use standard `assert` statements. For HTTP responses, check both status codes and response body content.
+- **Type Hinting**: Use type hints for fixtures and parameters to maintain consistency with the rest of the codebase.
 
 #### Example Test Format
 ```python
@@ -139,12 +131,12 @@ def test_create_user(session: Session, client: TestClient):
 
 #### Individual Test Run
 ```bash
-pytest
+uv run pytest
 ```
 
 #### With Coverage
 ```bash
-pytest --cov
+uv run pytest --cov
 ```
 
 #### Generate Coverage Badge

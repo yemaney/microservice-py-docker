@@ -11,8 +11,10 @@ dependencies = [
     "aio-pika==9.4.1",
     "celery==5.4.0",
     "fastapi[all]==0.110.2",
+    "httpx==0.26.0",
     "minio==7.2.6",
     "passlib==1.7.4",
+    "pgvector==0.3.6",
     "psycopg2-binary==2.9.9",
     "python-jose==3.3.0",
     "sqlmodel==0.0.16",
@@ -23,6 +25,7 @@ dev = [
     "pre-commit==2.21.0",
     "pytest==7.2.0",
     "pytest-cov==4.0.0",
+    "ruff>=0.14.10",
     "trio==0.22.0",
 ]
 docs = [
