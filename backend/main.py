@@ -61,7 +61,7 @@ def process_file(user_id: int, filename: str, content_type: str) -> str:
         minio_path = f"{user_id}/{filename}"
 
         # Download file from MinIO to temporary location
-        with tempfile.NamedTemporaryFile(mode="w+", delete=False, suffix=".txt") as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False, suffix=".txt", encoding="utf-8") as temp_file:
             temp_path = temp_file.name
             try:
                 # Get file from MinIO
@@ -96,7 +96,7 @@ def process_file(user_id: int, filename: str, content_type: str) -> str:
                 if os.path.exists(temp_path):
                     os.unlink(temp_path)
 
-    except Exception as e:
+    except Exception:
         # Log error and re-raise for Celery error handling
-        logger.error(f"Error processing file {filename} for user {user_id}: {str(e)}")
+        logger.exception("Error processing file %s for user %s", filename, user_id)
         raise

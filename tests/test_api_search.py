@@ -1,8 +1,6 @@
-from typing import List, Tuple
-from unittest.mock import patch, AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
-
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlmodel import Session
@@ -19,9 +17,9 @@ def mock_embeddings():
 
 def test_search_files_success(
     client: TestClient,
-    logged_in_user: Tuple[dict, List[models.UserCreate]],
-    mock_embeddings,
+    logged_in_user: tuple[dict, list[models.UserCreate]],
     session: Session,
+    mock_embeddings,
 ):
     jwt = logged_in_user[0]["access_token"]
     headers = {"Authorization": f"Bearer {jwt}"}
@@ -56,6 +54,9 @@ def test_search_files_success(
     assert "similarity" in search_result
     assert search_result["user_id"] == user.id
 
+    # Verify the mock was called
+    mock_embeddings.assert_called_once()
+
     # Cleanup test data
     session.delete(test_file)
     session.commit()
@@ -68,8 +69,9 @@ def test_search_files_unauthorized(client: TestClient):
 
 def test_find_similar_files_success(
     client: TestClient,
-    logged_in_user: Tuple[dict, List[models.UserCreate]],
+    logged_in_user: tuple[dict, list[models.UserCreate]],
     session: Session,
+    mock_embeddings,
 ):
     jwt = logged_in_user[0]["access_token"]
     headers = {"Authorization": f"Bearer {jwt}"}
@@ -133,6 +135,9 @@ def test_find_similar_files_success(
         assert "similarity" in item
         assert 0 <= item["similarity"] <= 1
 
+    # Verify the mock was not called (using existing embeddings from DB)
+    mock_embeddings.assert_not_called()
+
     # Cleanup test data
     session.delete(target_file)
     session.delete(similar_file)
@@ -142,7 +147,7 @@ def test_find_similar_files_success(
 
 def test_find_similar_files_not_found(
     client: TestClient,
-    logged_in_user: Tuple[dict, List[models.UserCreate]],
+    logged_in_user: tuple[dict, list[models.UserCreate]],
 ):
     jwt = logged_in_user[0]["access_token"]
     headers = {"Authorization": f"Bearer {jwt}"}
@@ -161,8 +166,9 @@ def test_find_similar_files_unauthorized(client: TestClient):
 
 def test_find_similar_files_access_denied(
     client: TestClient,
-    logged_in_user: Tuple[dict, List[models.UserCreate]],
+    logged_in_user: tuple[dict, list[models.UserCreate]],
     session: Session,
+    mock_embeddings,
 ):
     jwt = logged_in_user[0]["access_token"]
     headers = {"Authorization": f"Bearer {jwt}"}
@@ -189,6 +195,9 @@ def test_find_similar_files_access_denied(
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert "not found" in response.json()["detail"].lower()
+
+    # Verify the mock was not called
+    mock_embeddings.assert_not_called()
 
     # Cleanup test data
     session.delete(other_user_file)

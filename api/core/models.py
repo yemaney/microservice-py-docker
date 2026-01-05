@@ -10,7 +10,6 @@ then an error will occur.
 """
 
 from datetime import datetime
-from typing import Optional
 
 from pgvector.sqlalchemy import Vector
 from pydantic import BaseModel, EmailStr
@@ -31,7 +30,7 @@ class UserBase(SQLModel):
     email: EmailStr = Field(unique=True, index=True, sa_type=AutoString)
 
 
-class User(UserBase, table=True):  # type: ignore
+class User(UserBase, table=True):  # type: ignore[misc]
     """
     Represents a user entity, inheriting from UserBase.
 
@@ -46,9 +45,9 @@ class User(UserBase, table=True):  # type: ignore
 
     """
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     password: str
-    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow, nullable=False)
+    created_at: datetime | None = Field(default_factory=datetime.utcnow, nullable=False)
 
 
 class UserCreate(UserBase):
@@ -151,7 +150,7 @@ class UploadedFile(BaseModel):
     status: str
 
 
-class FileMetadata(SQLModel, table=True):  # type: ignore
+class FileMetadata(SQLModel, table=True):  # type: ignore[misc]
     """
     Represents metadata for uploaded files including vector embeddings.
 
@@ -176,14 +175,14 @@ class FileMetadata(SQLModel, table=True):  # type: ignore
 
     """
 
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(index=True)
     filename: str = Field(index=True)
     content_type: str
     size: int
     minio_path: str
     embedding: list[float] = Field(sa_type=Vector(4096))
-    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow, nullable=False)
+    created_at: datetime | None = Field(default_factory=datetime.utcnow, nullable=False)
 
 
 class FileSearchResult(BaseModel):

@@ -1,6 +1,6 @@
 """This module is concerned with database related operations."""
 
-from typing import Generator
+from collections.abc import Generator
 
 from sqlalchemy import text
 from sqlmodel import Session, SQLModel, create_engine, select

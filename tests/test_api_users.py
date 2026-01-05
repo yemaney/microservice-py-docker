@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
@@ -39,7 +37,7 @@ def test_duplicate_create_user_fail(session: Session, client: TestClient):
     session.commit()
 
 
-def test_read_users(client: TestClient, logged_in_user: Tuple[dict, List[models.UserCreate]]):
+def test_read_users(client: TestClient, logged_in_user: tuple[dict, list[models.UserCreate]]):
     jwt = logged_in_user[0]["access_token"]
     headers = {"Authorization": f"Bearer {jwt}"}
     response = client.get("/users", headers=headers)

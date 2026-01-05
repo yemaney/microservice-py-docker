@@ -2,7 +2,7 @@
 name = "microservice-py-docker"
 version = "0.11.0"
 description = "Microservice with python and docker"
-authors = ["yemaney <yemane_@outlook.com>"]
+authors = [{name = "yemaney", email = "yemane_@outlook.com"}]
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.12"

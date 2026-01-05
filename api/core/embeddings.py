@@ -1,8 +1,8 @@
 """This module is concerned with generating and managing vector embeddings for file content using OpenRouter API."""
 
 import os
-from typing import List
 
+import anyio
 import httpx
 
 
@@ -23,11 +23,12 @@ def get_openrouter_api_key() -> str:
     """
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
-        raise ValueError("OPENROUTER_API_KEY environment variable is not set")
+        msg = "OPENROUTER_API_KEY environment variable is not set"
+        raise ValueError(msg)
     return api_key
 
 
-async def generate_embedding(text: str) -> List[float]:
+async def generate_embedding(text: str) -> list[float]:
     """
     Generate vector embedding for text content using OpenRouter API.
 
@@ -71,13 +72,13 @@ async def generate_embedding(text: str) -> List[float]:
         # Extract embedding from response
         # OpenRouter API typically returns: {"data": [{"embedding": [...], ...}], "usage": {...}}
         if "data" not in data or not data["data"]:
-            raise ValueError("Invalid response from OpenRouter API")
+            msg = "Invalid response from OpenRouter API"
+            raise ValueError(msg)
 
-        embedding = data["data"][0]["embedding"]
-        return embedding
+        return data["data"][0]["embedding"]
 
 
-async def generate_embedding_from_file(file_path: str) -> List[float]:
+async def generate_embedding_from_file(file_path: str) -> list[float]:
     """
     Generate vector embedding from file content using OpenRouter API.
 
@@ -101,8 +102,8 @@ async def generate_embedding_from_file(file_path: str) -> List[float]:
         If the API request fails.
 
     """
-    with open(file_path, "r", encoding="utf-8") as f:
-        content = f.read()
+
+    content = await anyio.Path(file_path).read_text(encoding="utf-8")
 
     # For text files, we can embed the entire content
     # For very large files, you might want to chunk them

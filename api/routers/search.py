@@ -1,20 +1,17 @@
 """This module defines a router for vector search functionality."""
 
-from typing import List
-
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import text
 from sqlmodel import Session, select
 
 from api.core import database, embeddings, models, oauth2
 
-
 router = APIRouter(prefix="/search", tags=["Search"])
 
 
 @router.get(
     "/files",
-    response_model=List[models.FileSearchResult],
+    response_model=list[models.FileSearchResult],
     status_code=status.HTTP_200_OK,
 )
 async def search_files(
@@ -75,33 +72,33 @@ async def search_files(
             },
         ).fetchall()
 
-        # Convert to response model
-        search_results = []
-        for row in results:
-            search_results.append(
-                models.FileSearchResult(
-                    id=row[0],
-                    filename=row[1],
-                    content_type=row[2],
-                    size=row[3],
-                    user_id=row[4],
-                    created_at=row[5],
-                    similarity=float(row[6]),
-                )
+        # Convert to response model using list comprehension
+        return [
+            models.FileSearchResult(
+                id=row[0],
+                filename=row[1],
+                content_type=row[2],
+                size=row[3],
+                user_id=row[4],
+                created_at=row[5],
+                similarity=float(row[6]),
             )
+            for row in results
+        ]
 
-        return search_results
-
-    except Exception as e:
+    except HTTPException:
+        raise
+    except ValueError as e:
+        msg = f"Error performing vector search: {e!s}"
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error performing vector search: {str(e)}",
+            detail=msg,
         ) from e
 
 
 @router.get(
     "/files/similar/{file_id}",
-    response_model=List[models.FileSearchResult],
+    response_model=list[models.FileSearchResult],
     status_code=status.HTTP_200_OK,
 )
 async def find_similar_files(
@@ -140,7 +137,7 @@ async def find_similar_files(
         select(models.FileMetadata).where(
             models.FileMetadata.id == file_id,
             models.FileMetadata.user_id == current_user.id,
-        )
+        ),
     ).first()
 
     if not target_file:
@@ -166,7 +163,7 @@ async def find_similar_files(
                 "target_embedding": str(
                     target_file.embedding.tolist()
                     if hasattr(target_file.embedding, "tolist")
-                    else target_file.embedding
+                    else target_file.embedding,
                 ),
                 "user_id": current_user.id,
                 "file_id": file_id,
@@ -174,25 +171,25 @@ async def find_similar_files(
             },
         ).fetchall()
 
-        # Convert to response model
-        search_results = []
-        for row in results:
-            search_results.append(
-                models.FileSearchResult(
-                    id=row[0],
-                    filename=row[1],
-                    content_type=row[2],
-                    size=row[3],
-                    user_id=row[4],
-                    created_at=row[5],
-                    similarity=float(row[6]),
-                )
+        # Convert to response model using list comprehension
+        return [
+            models.FileSearchResult(
+                id=row[0],
+                filename=row[1],
+                content_type=row[2],
+                size=row[3],
+                user_id=row[4],
+                created_at=row[5],
+                similarity=float(row[6]),
             )
+            for row in results
+        ]
 
-        return search_results
-
-    except Exception as e:
+    except HTTPException:
+        raise
+    except ValueError as e:
+        msg = f"Error finding similar files: {e!s}"
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error finding similar files: {str(e)}",
+            detail=msg,
         ) from e

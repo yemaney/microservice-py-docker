@@ -47,7 +47,7 @@ def users(session: Session, client: TestClient):
 
     for user_dict in user_dicts:
         client.post("/users/", json=user_dict)
-    user_models: list[models.UserCreate] = [models.UserCreate(**user) for user in user_dicts]  # type: ignore
+    user_models: list[models.UserCreate] = [models.UserCreate(**user) for user in user_dicts]  # type: ignore[arg-type]
 
     yield user_models
     for user_model in user_models:

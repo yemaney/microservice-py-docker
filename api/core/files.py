@@ -37,7 +37,7 @@ def get_minio_client(host: str = "minio") -> Minio:
     return client
 
 
-async def get_file_size(file: UploadFile) -> int:
+def get_file_size(file: UploadFile) -> int:
     """
     get_file_size calculates the size of an uploaded file.
 

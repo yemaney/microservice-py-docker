@@ -10,6 +10,8 @@ from minio.error import S3Error
 
 from api.core import celery, files, models, oauth2
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/files", tags=["Files"])
 
 
@@ -50,12 +52,12 @@ async def upload_file(
             detail=f"File type of {file.content_type} is not a supported media type of text/plain",
         )
 
-    file_size = await files.get_file_size(file)
+    file_size = files.get_file_size(file)
 
     try:
         minio_client.put_object(files.BUCKET, f"{current_user.id}/{file.filename}", file.file, file_size)
     except S3Error as e:
-        logging.exception()
+        logger.exception("Error uploading file %s", file.filename)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error uploading file.",
@@ -68,7 +70,7 @@ async def upload_file(
             args=[current_user.id, file.filename, file.content_type],
         )
     except TaskError as e:
-        logging.exception()
+        logger.exception("Error queueing file process for %s", file.filename)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error queueing file process",

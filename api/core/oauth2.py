@@ -67,12 +67,12 @@ def verify_access_token(token: str, credentials_exception: HTTPException):
     """
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-        _id = payload.get("user")
-        if _id is None:
+        user_id = payload.get("user")
+        if user_id is None:
             raise credentials_exception
     except JWTError as e:
         raise credentials_exception from e
-    return _id
+    return user_id
 
 
 def get_current_user(
@@ -106,9 +106,9 @@ def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    _id = verify_access_token(token, credentials_exception)
+    user_id = verify_access_token(token, credentials_exception)
 
-    return session.exec(select(models.User).where(models.User.id == _id)).first()
+    return session.exec(select(models.User).where(models.User.id == user_id)).first()
 
 
 def hash_password(password: str) -> str:

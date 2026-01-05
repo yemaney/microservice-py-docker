@@ -1,5 +1,4 @@
 import tempfile
-from typing import List, Tuple
 
 from fastapi import status
 from fastapi.testclient import TestClient
@@ -7,7 +6,7 @@ from fastapi.testclient import TestClient
 from api.core import models
 
 
-def test_upload_file(client: TestClient, logged_in_user: Tuple[dict, List[models.UserCreate]]):
+def test_upload_file(client: TestClient, logged_in_user: tuple[dict, list[models.UserCreate]]):
     jwt = logged_in_user[0]["access_token"]
     headers = {"Authorization": f"Bearer {jwt}"}
 
@@ -21,7 +20,7 @@ def test_upload_file(client: TestClient, logged_in_user: Tuple[dict, List[models
         assert data["content_type"] == "text/plain"
 
 
-def test_upload_filetype_fail(client: TestClient, logged_in_user: Tuple[dict, List[models.UserCreate]]):
+def test_upload_filetype_fail(client: TestClient, logged_in_user: tuple[dict, list[models.UserCreate]]):
     jwt = logged_in_user[0]["access_token"]
     headers = {"Authorization": f"Bearer {jwt}"}
 
